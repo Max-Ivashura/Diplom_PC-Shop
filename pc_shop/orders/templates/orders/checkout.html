@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Оформление заказа</h1>
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Подтвердить заказ</button>
+</form>
+
+<h3>Ваш заказ:</h3>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Товар</th>
+            <th>Количество</th>
+            <th>Цена</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in cart.cartitem_set.all %}
+        <tr>
+            <td>{{ item.product.name }}</td>
+            <td>{{ item.quantity }}</td>
+            <td>{{ item.total_price }} руб.</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="2"><strong>Итого:</strong></td>
+            <td>{{ cart.cartitem_set.aggregate(total=models.Sum('total_price'))|default:0 }} руб.</td>
+        </tr>
+    </tfoot>
+</table>
+{% endblock %}

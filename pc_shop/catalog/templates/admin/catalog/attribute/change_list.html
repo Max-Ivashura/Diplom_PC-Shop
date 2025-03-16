@@ -1,0 +1,68 @@
+{% extends "admin/change_list.html" %}
+
+{% block content_title %}
+<h1>Выберите атрибут для редактирования</h1>
+{% endblock %}
+
+{% block content %}
+<div class="accordion" id="mainAccordion">
+    {% for category in categories %}
+    <div class="accordion-item">
+        <h2 class="accordion-header" id="categoryHeading{{ category.id }}">
+            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#categoryCollapse{{ category.id }}">
+                {{ category.name }}
+            </button>
+        </h2>
+        <div id="categoryCollapse{{ category.id }}" class="accordion-collapse collapse">
+            <div class="accordion-body">
+                <div class="accordion" id="groupAccordion{{ category.id }}">
+                    {% for group in category.attributegroup_set.all %}
+                    <div class="accordion-item">
+                        <h2 class="accordion-header d-flex justify-content-between"
+                            id="groupHeading{{ group.id }}">
+                            <button class="accordion-button collapsed flex-grow-1"
+                                    type="button" data-bs-toggle="collapse"
+                                    data-bs-target="#groupCollapse{{ group.id }}">
+                                {{ group.name }} (порядок: {{ group.order }})
+                            </button>
+                            <a href="{% url 'admin:catalog_attributegroup_change' group.id %}"
+                               class="btn btn-sm btn-outline-secondary ms-2 align-self-center">
+                                <i class="bi bi-pencil"></i>
+                            </a>
+                        </h2>
+                        <div id="groupCollapse{{ group.id }}" class="accordion-collapse collapse">
+                            <div class="accordion-body">
+                                <table class="table table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>Название</th>
+                                            <th>Тип</th>
+                                            <th>Порядок</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for attr in group.attribute_set.all %}
+                                        <tr>
+                                            <td>
+                                                <a href="{% url 'admin:catalog_attribute_change' attr.id %}">
+                                                    {{ attr.name }}
+                                                </a>
+                                            </td>
+                                            <td>{{ attr.get_attribute_type_display }}</td>
+                                            <td>{{ attr.order }}</td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

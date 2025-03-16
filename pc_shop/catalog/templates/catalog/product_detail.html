@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{ product.name }}</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <div id="productImages" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% for image in product.productimage_set.all %}
+                <div class="carousel-item {% if image.is_main %}active{% endif %}">
+                    <img src="{{ image.image.url }}" class="d-block w-100" alt="{{ product.name }}">
+                </div>
+                {% endfor %}
+            </div>
+            <button class="carousel-control-prev" ...></button>
+            <button class="carousel-control-next" ...></button>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <p><strong>Цена:</strong> {{ product.price }} руб.</p>
+        <p><strong>Описание:</strong> {{ product.description }}</p>
+        <p><strong>В наличии:</strong> {% if product.in_stock %}Да{% else %}Нет{% endif %}</p>
+    </div>
+</div>
+
+<h3>Характеристики:</h3>
+<ul>
+    {% for attr_value in product.attributevalue_set.all %}
+    <li>
+        {{ attr_value.attribute.name }}:
+        {{ attr_value.get_value }}
+        {% if attr_value.attribute.unit %}{{ attr_value.attribute.unit }}{% endif %}
+    </li>
+    {% endfor %}
+</ul>
+{% endblock %}

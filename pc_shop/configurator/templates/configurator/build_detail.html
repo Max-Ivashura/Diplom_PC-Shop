@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{ build.title }}</h1>
+<p>{{ build.description }}</p>
+<p>Цена: {{ build.total_price }} руб.</p>
+
+<h3>Компоненты:</h3>
+<ul>
+    {% for component in build.components.all %}
+    <li>{{ component.name }} ({{ component.category }})</li>
+    {% endfor %}
+</ul>
+{% endblock %}

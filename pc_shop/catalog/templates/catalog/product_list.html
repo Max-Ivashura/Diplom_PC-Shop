@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Каталог</h1>
+
+<div>
+    <h3>Фильтрация:</h3>
+    <form method="get">
+        {{ filter.form.as_p }}
+        <button type="submit" class="btn btn-primary">Применить фильтр</button>
+    </form>
+    <h3>Категории:</h3>
+    <ul>
+        {% for cat in categories %}
+        <li>
+            <a href="{% url 'product_list_by_category' cat.slug %}">{{ cat.name }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div>
+    <h3>Товары:</h3>
+    <div class="row">
+        {% for product in products %}
+        <div class="col-md-4">
+            <div class="card">
+                <img src="{{ product.productimage_set.first.image.url }}" class="card-img-top" alt="{{ product.name }}">
+                <div class="card-body">
+                    <h5 class="card-title">{{ product.name }}</h5>
+                    <p class="card-text">{{ product.description|truncatewords:10 }}</p>
+                    <p class="card-text"><strong>{{ product.price }} руб.</strong></p>
+                    <!-- Кнопка для перехода на детальную страницу -->
+                    <a href="{% url 'product_detail' product.pk %}" class="btn btn-secondary">Подробнее</a>
+                    <!-- Кнопка добавления в корзину -->
+                    <a href="{% url 'add_to_cart' product.id %}" class="btn btn-success add-to-cart">Добавить в
+                        корзину</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

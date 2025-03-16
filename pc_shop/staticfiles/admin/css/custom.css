@@ -1,0 +1,5 @@
+/* static/admin/css/custom.css */
+.custom-test {
+  background-color: yellow !important;
+  border: 2px solid blue !important;
+}

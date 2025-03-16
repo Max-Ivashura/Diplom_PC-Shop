@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Личный кабинет</h1>
+
+<div>
+    <h3>Мои данные:</h3>
+    <p>Имя: {{ user.username }}</p>
+    <p>Телефон: {{ user.profile.phone }}</p>
+    <p>Адрес: {{ user.profile.address }}</p>
+    <a href="{% url 'edit_profile' %}" class="btn btn-secondary">Редактировать профиль</a>
+</div>
+
+<div>
+    <h3>Мои заказы:</h3>
+    <ul>
+        {% for order in orders %}
+        <li>
+            <a href="{% url 'order_detail' order.pk %}">Заказ #{{ order.id }} ({{ order.get_status_display }})</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<div>
+    <h3>Мои сборки:</h3>
+    <ul>
+        {% for build in builds %}
+        <li>
+            <a href="{% url 'build_detail' build.pk %}">{{ build.title }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endblock %}
