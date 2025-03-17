@@ -1,36 +1,20 @@
 <!-- attribute_value_inline.html -->
-{% load i18n static custom_filters%}
-<div class="accordion" id="attributeGroupsAccordion">
-    {% if attribute_groups %}
+{% load i18n static %}
+
+<div class="attribute-groups">
     {% for group in attribute_groups %}
-    <div class="accordion-item">
-        <h2 class="accordion-header" id="heading{{ group.id }}">
-            <button class="accordion-button collapsed" type="button"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#group{{ group.id }}">
-                {{ group.name }}
-            </button>
-        </h2>
-        <div id="group{{ group.id }}"
-             class="accordion-collapse collapse"
-             data-bs-parent="#attributeGroupsAccordion">
-            <div class="accordion-body">
+        <div class="attribute-group" data-order="{{ group.order }}">
+            <h3>{{ group.name }}</h3>
+            <div class="attributes">
                 {% for attribute in group.attribute_set.all %}
-                <div class="mb-3">
-                    <label class="form-label">{{ attribute.name }}</label>
-                    {% with value=original.attributevalue_set.all|get_attribute_value:attribute %}
-                    <input type="text"
-                           name="attribute_{{ attribute.id }}"
-                           value="{{ value.get_value|default:'' }}"
-                           class="form-control">
-                    {% endwith %}
-                </div>
+                    <div class="attribute-row">
+                        <label>{{ attribute.name }}</label>
+                        <input type="text"
+                               name="attribute_{{ attribute.id }}"
+                               value="{{ attribute.value }}">
+                    </div>
                 {% endfor %}
             </div>
         </div>
-    </div>
     {% endfor %}
-    {% else %}
-    <p>Сначала сохраните товар с выбранной категорией</p>
-    {% endif %}
 </div>

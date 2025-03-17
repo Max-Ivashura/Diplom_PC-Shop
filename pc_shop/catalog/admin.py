@@ -1,11 +1,16 @@
+from django.db.models import Prefetch
+
 from .models import Category, AttributeGroup, Attribute, AttributeValue
 from django.utils.html import format_html
 from django.urls import reverse
-from django.urls import path
 from django.shortcuts import redirect, get_object_or_404
 from django.contrib import admin
 from adminsortable2.admin import SortableAdminBase, SortableInlineAdminMixin
-from .models import Product, ProductImage
+from .models import ProductImage
+from django import forms
+from django.urls import path
+from django.template.response import TemplateResponse
+from .models import Attribute, Product
 
 
 class ProductImageInline(SortableInlineAdminMixin, admin.TabularInline):
@@ -20,12 +25,43 @@ class ProductImageInline(SortableInlineAdminMixin, admin.TabularInline):
     image_preview.short_description = 'Миниатюра'
 
 
+class AttributeValueForm(forms.ModelForm):
+    class Meta:
+        model = AttributeValue
+        fields = '__all__'
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'instance' in kwargs and kwargs['instance']:
+            self.fields['attribute'].queryset = Attribute.objects.filter(
+                group__category=kwargs['instance'].product.category
+            ).order_by('group__order', 'order')
+
+
+class AttributeValueInline(admin.TabularInline):
+    model = AttributeValue
+    form = AttributeValueForm
+    extra = 0
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.select_related('attribute__group').order_by(
+            'attribute__group__order',
+            'attribute__order'
+        )
+
+    def formfield_for_foreignkey(self, db_field, request, **kwargs):
+        if db_field.name == "attribute":
+            kwargs["queryset"] = Attribute.objects.order_by('group__order', 'order')
+        return super().formfield_for_foreignkey(db_field, request, **kwargs)
+
+
 @admin.register(Product)
 class ProductAdmin(SortableAdminBase, admin.ModelAdmin):  # Добавлено наследование
     list_display = ('preview_and_name', 'category', 'price', 'in_stock', 'image_management_link')
     list_filter = ('category', 'in_stock')
     search_fields = ('name',)
-    inlines = [ProductImageInline]
+    inlines = [ProductImageInline, AttributeValueInline]
 
     class Media:
         css = {
@@ -38,7 +74,17 @@ class ProductAdmin(SortableAdminBase, admin.ModelAdmin):  # Добавлено �
         js = (
             'admin/js/product_admin.js',
             'admin/js/product_attribute.js',
+            'admin/js/attribute_filter.js',
         )
+
+    def change_view(self, request, object_id, form_url='', extra_context=None):
+        extra_context = extra_context or {}
+        product = self.get_object(request, object_id)
+        extra_context['attribute_values_dict'] = {
+            str(av.attribute_id): av  # Используем строки для ключей
+            for av in product.attributevalue_set.select_related('attribute').all()
+        }
+        return super().change_view(request, object_id, form_url, extra_context)
 
     def preview_and_name(self, obj):
         main_image = obj.productimage_set.filter(is_main=True).first()
@@ -69,14 +115,6 @@ class ProductAdmin(SortableAdminBase, admin.ModelAdmin):  # Добавлено �
 
     thumbnail_preview.short_description = 'Превью'
 
-    def get_urls(self):
-        urls = super().get_urls()
-        custom_urls = [
-            path('<int:product_id>/images/', self.admin_site.admin_view(self.manage_images),
-                 name='manage_product_images'),
-        ]
-        return custom_urls + urls
-
     def manage_images(self, request, product_id):
         product = get_object_or_404(Product, pk=product_id)
         return redirect(f'/admin/catalog/product/{product_id}/change/#productimage_set-group')
@@ -86,6 +124,37 @@ class ProductAdmin(SortableAdminBase, admin.ModelAdmin):  # Добавлено �
             '<a href="{}" class="button">Изображения</a>',
             reverse('admin:manage_product_images', args=[obj.pk])
         )
+
+    def get_inline_instances(self, request, obj=None):
+        if not obj:
+            return []
+        return super().get_inline_instances(request, obj)
+
+    def get_urls(self):
+        urls = super().get_urls()
+        custom_urls = [
+            path('get_attributes/', self.admin_site.admin_view(self.get_attributes_view),
+                 name='get_attributes'),
+        ]
+        return custom_urls + urls
+
+    def get_attributes_view(self, request):
+        category_id = request.GET.get('category_id')
+        category = get_object_or_404(Category, id=category_id)
+
+        attribute_groups = category.attributegroup_set.prefetch_related(
+            Prefetch('attribute_set', queryset=Attribute.objects.order_by('order'))
+        ).order_by('order')
+
+        return TemplateResponse(request, 'admin/catalog/product/attribute_groups.html', {
+            'attribute_groups': attribute_groups,
+            'original': self.get_object(request, request.GET.get('product_id')),
+        })
+
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        attributes_data = request.POST.get('attributes', {})
+        # Обработка сохранения атрибутов
 
     image_management_link.short_description = 'Действия'
 
