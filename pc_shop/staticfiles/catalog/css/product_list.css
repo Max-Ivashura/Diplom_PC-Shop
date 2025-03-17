@@ -1,0 +1,72 @@
+/* catalog/static/catalog/css/product_list.css */
+.product-card {
+    border: none;
+    border-radius: 12px;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.product-image {
+    width: 100%;
+    aspect-ratio: 1/1; /* Квадратное изображение */
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-title {
+    font-size: 1.25rem;
+    line-height: 1.2;
+}
+
+.card-text {
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.btn-sm {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.8rem;
+}
+
+/* Отступы между карточками */
+.product-card + .product-card {
+    margin-top: 1rem;
+}
+
+/* Адаптивность */
+@media (max-width: 768px) {
+    .col-3 {
+        flex: 0 0 25%;
+        max-width: 25%;
+    }
+
+    .col-9 {
+        flex: 0 0 75%;
+        max-width: 75%;
+    }
+
+    .product-image {
+        border-radius: 12px 12px 0 0;
+    }
+}
+
+/* Стили для мобильных устройств */
+@media (max-width: 576px) {
+    .col-3 {
+        flex: 0 0 30%;
+        max-width: 30%;
+    }
+
+    .col-9 {
+        flex: 0 0 70%;
+        max-width: 70%;
+    }
+}

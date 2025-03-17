@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>{{ build.title }}</h1>
+
+<div class="row">
+    <div class="col-md-8">
+        <h3>Компоненты сборки:</h3>
+        <ul>
+            {% for component in build.pc_build.components.all %}
+            <li>{{ component.name }} - {{ component.price }} руб.</li>
+            {% endfor %}
+        </ul>
+
+        <h3>Комментарии:</h3>
+        {% for comment in comments %}
+        <div class="card mb-2">
+            <div class="card-body">
+                <p class="card-text">{{ comment.text }}</p>
+                <footer class="blockquote-footer">
+                    {{ comment.user.username }} | {{ comment.created_at }}
+                </footer>
+            </div>
+        </div>
+        {% endfor %}
+
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-primary">Оставить комментарий</button>
+        </form>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5>Рейтинг: {{ build.rating }}/5</h5>
+                {% if user.is_authenticated and user not in build.votes.all %}
+                <form action="{% url 'vote_build' build.pk %}" method="post">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">Голосовать</button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

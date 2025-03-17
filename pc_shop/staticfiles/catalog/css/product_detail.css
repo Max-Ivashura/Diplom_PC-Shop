@@ -1,0 +1,37 @@
+.product-title {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.product-price {
+    font-size: 2rem;
+    color: #28a745;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+}
+
+.carousel-control-prev, .carousel-control-next {
+    width: 5%;
+    background: rgba(0,0,0,0.3);
+}
+
+.accordion-button {
+    background: #f8f9fa;
+    border: none;
+    color: #333;
+}
+
+.accordion-button:not(.collapsed) {
+    background: #e9ecef;
+}
+
+.list-group-item {
+    border: none;
+    padding: 0.75rem 1.25rem;
+}
+
+.list-group-item strong {
+    min-width: 200px;
+    display: inline-block;
+}

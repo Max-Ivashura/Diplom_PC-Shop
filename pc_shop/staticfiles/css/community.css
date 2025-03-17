@@ -1,0 +1,7 @@
+/* Добавьте в base.html: <link href="{% static 'css/community.css' %}" rel="stylesheet"> */
+.community-card {
+    transition: transform 0.2s;
+}
+.community-card:hover {
+    transform: translateY(-5px);
+}
