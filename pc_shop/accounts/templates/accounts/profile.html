@@ -130,12 +130,17 @@
                     {% for build in builds %}
                     <li class="list-group-item">
                         <a href="{% url 'build_detail' build.pk %}">{{ build.title }}</a>
+                        {% if build in empty_builds %}
+                        <span class="text-muted">(Пустая сборка)</span>
+                        {% else %}
                         <span class="float-end">{{ build.total_price }} руб.</span>
+                        {% endif %}
                     </li>
                     {% endfor %}
                 </ul>
                 {% else %}
-                <p>У вас нет сборок ПК.</p>
+                <p>У вас пока нет сборок ПК. <a href="{% url 'configurator' %}" class="btn btn-primary btn-sm">Создать
+                    новую</a></p>
                 {% endif %}
             </div>
         </div>

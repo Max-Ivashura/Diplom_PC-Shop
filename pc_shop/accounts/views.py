@@ -15,10 +15,15 @@ def profile_view(request):
     orders = Order.objects.filter(user=request.user)
     builds = PCBuild.objects.filter(user=request.user)
     comparison = Comparison.objects.filter(user=request.user).first()
+
+    # Проверяем, есть ли у сборок компоненты
+    empty_builds = [build for build in builds if not build.buildcomponent_set.exists()]
+
     return render(request, 'accounts/profile.html', {
         'orders': orders,
         'builds': builds,
-        'comparison': comparison
+        'comparison': comparison,
+        'empty_builds': empty_builds
     })
 
 
