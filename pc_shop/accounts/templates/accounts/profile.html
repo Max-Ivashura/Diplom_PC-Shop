@@ -1,35 +1,164 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link href="{% static 'accounts/css/profile.css' %}" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
-<h1>Личный кабинет</h1>
+<div class="container mt-5">
+    <div class="row">
+        <!-- Левая панель -->
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <img src="{{ user.profile.avatar.url|default:'/static/images/default-avatar.png' }}"
+                         alt="Аватар" class="rounded-circle img-thumbnail mb-3" style="width: 100px; height: 100px;">
+                    <h5>{{ user.first_name }} {{ user.last_name }}</h5>
+                    <p><small>{{ user.profile.phone }}</small></p>
+                    <a href="#" class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#profileModal">Подробнее</a>
+                </div>
+            </div>
 
-<div>
-    <h3>Мои данные:</h3>
-    <p>Имя: {{ user.username }}</p>
-    <p>Телефон: {{ user.profile.phone }}</p>
-    <p>Адрес: {{ user.profile.address }}</p>
-    <a href="{% url 'edit_profile' %}" class="btn btn-secondary">Редактировать профиль</a>
+            <!-- Боковое меню -->
+            <div class="list-group">
+                <a href="#orders" class="list-group-item list-group-item-action">Заказы</a>
+                <a href="#favorites" class="list-group-item list-group-item-action">Избранное</a>
+                <a href="#reviews" class="list-group-item list-group-item-action">Мои отзывы</a>
+                <a href="#comparison" class="list-group-item list-group-item-action">Сравнение</a>
+                <a href="#builds" class="list-group-item list-group-item-action">Сборки ПК</a>
+            </div>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="col-md-9">
+            <!-- Заказы -->
+            <div id="orders" class="mb-4">
+                <h4>Заказы</h4>
+                {% if orders %}
+                <ul class="list-group">
+                    {% for order in orders %}
+                    <li class="list-group-item">
+                        Заказ #{{ order.id }} ({{ order.get_status_display }})
+                        <span class="float-end">{{ order.total_price }} руб.</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>У вас пока нет заказов.</p>
+                {% endif %}
+            </div>
+
+            <!-- Избранное -->
+            <div id="favorites" class="mb-4">
+                <h4>Избранное</h4>
+                {% if user.profile.favorite_products.all %}
+                <div class="row">
+                    {% for product in user.profile.favorite_products.all %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <img src="{{ product.productimage_set.first.image.url }}" class="card-img-top"
+                                 alt="{{ product.name }}">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ product.name }}</h5>
+                                <p class="card-text">{{ product.price }} руб.</p>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <p>У вас нет избранных товаров.</p>
+                {% endif %}
+            </div>
+
+            <!-- Отзывы -->
+            <div id="reviews" class="mb-4">
+                <h4>Мои отзывы</h4>
+                {% if user.review_set.all %}
+                <ul class="list-group">
+                    {% for review in user.review_set.all %}
+                    <li class="list-group-item">
+                        <strong>{{ review.product.name }}</strong>: {{ review.text }}
+                        <span class="float-end">{{ review.rating }}/5</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>У вас пока нет отзывов.</p>
+                {% endif %}
+            </div>
+
+            <!-- Сравнение -->
+            <div id="comparison" class="mb-4">
+                <h4>Сравнение</h4>
+                {% if comparison.products.all %}
+                <table class="table table-bordered">
+                    <thead>
+                    <tr>
+                        <th>Товар</th>
+                        <th>Цена</th>
+                        <th>Характеристики</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for product in comparison.products.all %}
+                    <tr>
+                        <td>{{ product.name }}</td>
+                        <td>{{ product.price }} руб.</td>
+                        <td>
+                            <ul>
+                                {% for attr_value in product.attributevalue_set.all %}
+                                <li>{{ attr_value.attribute.name }}: {{ attr_value.get_value }}</li>
+                                {% endfor %}
+                            </ul>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p>У вас нет товаров для сравнения.</p>
+                {% endif %}
+            </div>
+
+            <!-- Сборки ПК -->
+            <div id="builds" class="mb-4">
+                <h4>Сборки ПК</h4>
+                {% if builds %}
+                <ul class="list-group">
+                    {% for build in builds %}
+                    <li class="list-group-item">
+                        <a href="{% url 'build_detail' build.pk %}">{{ build.title }}</a>
+                        <span class="float-end">{{ build.total_price }} руб.</span>
+                    </li>
+                    {% endfor %}
+                </ul>
+                {% else %}
+                <p>У вас нет сборок ПК.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
 </div>
 
-<div>
-    <h3>Мои заказы:</h3>
-    <ul>
-        {% for order in orders %}
-        <li>
-            <a href="{% url 'order_detail' order.pk %}">Заказ #{{ order.id }} ({{ order.get_status_display }})</a>
-        </li>
-        {% endfor %}
-    </ul>
-</div>
-
-<div>
-    <h3>Мои сборки:</h3>
-    <ul>
-        {% for build in builds %}
-        <li>
-            <a href="{% url 'build_detail' build.pk %}">{{ build.title }}</a>
-        </li>
-        {% endfor %}
-    </ul>
+<!-- Модальное окно с подробной информацией -->
+<div class="modal fade" id="profileModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Подробная информация</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p><strong>Имя:</strong> {{ user.first_name }}</p>
+                <p><strong>Фамилия:</strong> {{ user.last_name }}</p>
+                <p><strong>Телефон:</strong> {{ user.profile.phone }}</p>
+                <p><strong>Email:</strong> {{ user.email }}</p>
+                <p><strong>Никнейм:</strong> {{ user.username }}</p>
+                <a href="{% url 'password_change' %}" class="btn btn-warning">Сменить пароль</a>
+            </div>
+        </div>
+    </div>
 </div>
 {% endblock %}

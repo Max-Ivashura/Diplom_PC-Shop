@@ -2,6 +2,8 @@ from django.shortcuts import render, get_object_or_404
 from .models import Category, Product
 from django.core.paginator import Paginator
 from .filters import ProductFilter
+from django.shortcuts import get_object_or_404, redirect
+from .models import Product, Comparison
 
 
 def product_list(request, category_slug=None):
@@ -39,11 +41,47 @@ def product_detail(request, pk):
     return render(request, 'catalog/product_detail.html', {'product': product})
 
 
-def compare_view(request):
+def comparison_view(request):
     comparison = None
+
     if request.user.is_authenticated:
         comparison = Comparison.objects.filter(user=request.user).first()
     else:
         session_key = request.session.session_key
         comparison = Comparison.objects.filter(session_key=session_key).first()
+
     return render(request, 'catalog/compare.html', {'comparison': comparison})
+
+
+def add_to_comparison(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    comparison = None
+
+    if request.user.is_authenticated:
+        comparison, created = Comparison.objects.get_or_create(user=request.user)
+    else:
+        session_key = request.session.session_key
+        if not session_key:
+            request.session.create()
+            session_key = request.session.session_key
+        comparison, created = Comparison.objects.get_or_create(session_key=session_key)
+
+    if product not in comparison.products.all():
+        comparison.products.add(product)
+
+    return redirect('product_detail', pk=product_id)
+
+def remove_from_comparison(request, product_id):
+    product = get_object_or_404(Product, id=product_id)
+    comparison = None
+
+    if request.user.is_authenticated:
+        comparison = Comparison.objects.filter(user=request.user).first()
+    else:
+        session_key = request.session.session_key
+        comparison = Comparison.objects.filter(session_key=session_key).first()
+
+    if comparison and product in comparison.products.all():
+        comparison.products.remove(product)
+
+    return redirect('comparison_view')

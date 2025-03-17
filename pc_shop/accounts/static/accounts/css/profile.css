@@ -1,0 +1,16 @@
+body {
+    font-family: Arial, sans-serif;
+}
+
+.list-group-item-action:hover {
+    background-color: #f8f9fa;
+}
+
+.card-img-top {
+    height: 150px;
+    object-fit: cover;
+}
+
+.modal-body p {
+    margin-bottom: 0.5rem;
+}

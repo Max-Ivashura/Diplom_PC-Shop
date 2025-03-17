@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1>Сравнение товаров</h1>
+
+    {% if comparison and comparison.products.all %}
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Товар</th>
+                <th>Цена</th>
+                <th>Категория</th>
+                <th>Характеристики</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in comparison.products.all %}
+            <tr>
+                <td>{{ product.name }}</td>
+                <td>{{ product.price }} руб.</td>
+                <td>{{ product.category.name }}</td>
+                <td>
+                    <ul>
+                        {% for attr_value in product.attributevalue_set.all %}
+                        <li>{{ attr_value.attribute.name }}: {{ attr_value.get_value }}</li>
+                        {% endfor %}
+                    </ul>
+                </td>
+                <td>
+                    <a href="{% url 'remove_from_comparison' product.pk %}" class="btn btn-danger btn-sm">Удалить</a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+    <p>У вас нет товаров для сравнения.</p>
+    {% endif %}
+</div>
+{% endblock %}

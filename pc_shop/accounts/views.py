@@ -2,6 +2,7 @@ from django.contrib.auth.decorators import login_required
 from .forms import ProfileForm
 from orders.models import Order
 from configurator.models import PCBuild
+from catalog.models import Comparison
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
@@ -13,9 +14,11 @@ from django.views.generic import FormView
 def profile_view(request):
     orders = Order.objects.filter(user=request.user)
     builds = PCBuild.objects.filter(user=request.user)
+    comparison = Comparison.objects.filter(user=request.user).first()
     return render(request, 'accounts/profile.html', {
         'orders': orders,
-        'builds': builds
+        'builds': builds,
+        'comparison': comparison
     })
 
 
