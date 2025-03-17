@@ -23,11 +23,11 @@ INSTALLED_APPS = [
     'cart',
     'orders',
     'community',
-    'crispy_forms',
     'django_filters',
     'debug_toolbar',
     # Addons
     'adminsortable2',
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [

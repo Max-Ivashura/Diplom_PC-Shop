@@ -28,7 +28,7 @@
             {% endfor %}
         </tbody>
     </table>
-    <p><strong>Итого:</strong> {{ cart.cartitem_set.aggregate(total=models.Sum('total_price'))|default:0 }} руб.</p>
+    <p><strong>Итого:</strong> {{ total_price }} руб.</p>
     <a href="{% url 'checkout' %}" class="btn btn-primary">Оформить заказ</a>
 </div>
 {% endblock %}

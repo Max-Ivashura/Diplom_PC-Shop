@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Сборки сообщества</h1>
+
+{% if builds %}
+<div class="row">
+    {% for build in builds %}
+    <div class="col-md-4 mb-4">
+        <div class="card community-card">
+            <div class="card-body">
+                <h5 class="card-title">{{ build.title }}</h5>
+                <p class="card-text">{{ build.description|truncatewords:20 }}</p>
+                <p>
+                    <small class="text-muted">
+                        Автор: {{ build.user.username }} |
+                        Рейтинг: {{ build.rating }}/5 |
+                        Дата: {{ build.created_at|date:"d.m.Y" }}
+                    </small>
+                </p>
+                <a href="{% url 'community_build_detail' build.pk %}" class="btn btn-primary">Подробнее</a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Пагинация -->
+<div class="pagination">
+    <span class="step-links">
+        {% if builds.has_previous %}
+            <a href="?page=1">&laquo; первая</a>
+            <a href="?page={{ builds.previous_page_number }}">предыдущая</a>
+        {% endif %}
+
+        <span class="current">
+            Страница {{ builds.number }} из {{ builds.paginator.num_pages }}
+        </span>
+
+        {% if builds.has_next %}
+            <a href="?page={{ builds.next_page_number }}">следующая</a>
+            <a href="?page={{ builds.paginator.num_pages }}">последняя &raquo;</a>
+        {% endif %}
+    </span>
+</div>
+
+{% else %}
+
+<!-- Сообщение при отсутствии сборок -->
+<div class="alert alert-info text-center" role="alert">
+    <h4 class="alert-heading">Сборок пока нет!</h4>
+    <p>Вы можете стать первым, кто опубликует свою сборку.</p>
+    {% if user.is_authenticated %}
+    <a href="{% url 'configurator' %}" class="btn btn-success">Создать сборку</a>
+    {% else %}
+    <a href="{% url 'login' %}" class="btn btn-primary">Войти</a>
+    <a href="{% url 'register' %}" class="btn btn-secondary">Зарегистрироваться</a>
+    {% endif %}
+</div>
+
+{% endif %}
+{% endblock %}

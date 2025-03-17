@@ -58,6 +58,18 @@ class Product(models.Model):
     in_stock = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    @property
+    def attributes_dict(self):
+        if not hasattr(self, '_attributes_cache'):
+            self._attributes_cache = {
+                av.attribute: av
+                for av in self.attributevalue_set.select_related('attribute').all()
+            }
+        return self._attributes_cache
+
+    def get_attribute_value(self, attribute):
+        return self.attributes_dict.get(attribute)
+
     def save(self, *args, **kwargs):
         is_new = self.pk is None
         super().save(*args, **kwargs)

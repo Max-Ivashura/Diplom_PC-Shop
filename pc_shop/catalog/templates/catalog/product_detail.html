@@ -1,37 +1,115 @@
 {% extends "base.html" %}
+{% load static %}
+{% load static custom_filters %}
+
+{% block extra_css %}
+<link href="{% static 'catalog/css/product_detail.css' %}" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
-<h1>{{ product.name }}</h1>
+<div class="container mt-5">
+    <div class="row">
+        <!-- Основной слайдер -->
+        <div class="col-md-6">
+            <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                <!-- Основные изображения -->
+                <div class="carousel-inner">
+                    {% for image in product.productimage_set.all %}
+                    <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                        <img src="{{ image.image.url }}"
+                             class="d-block w-100 main-image rounded"
+                             alt="{{ product.name }}">
+                    </div>
+                    {% endfor %}
+                </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div id="productImages" class="carousel slide" data-bs-ride="carousel">
-            <div class="carousel-inner">
-                {% for image in product.productimage_set.all %}
-                <div class="carousel-item {% if image.is_main %}active{% endif %}">
-                    <img src="{{ image.image.url }}" class="d-block w-100" alt="{{ product.name }}">
+                <!-- Миниатюры -->
+                <div class="thumbnail-container mt-3">
+                    {% for image in product.productimage_set.all %}
+                    <div class="thumbnail-item">
+                        <img src="{{ image.image.url }}"
+                             class="thumbnail-img rounded {% if forloop.first %}active{% endif %}"
+                             data-bs-target="#productCarousel"
+                             data-bs-slide-to="{{ forloop.counter0 }}">
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Информация -->
+        <div class="col-md-6">
+            <h1 class="product-title">{{ product.name }}</h1>
+            <p class="product-price">{{ product.price }} ₽</p>
+
+            <div class="mb-3">
+                {% if product.in_stock %}
+                <span class="badge bg-success">В наличии</span>
+                {% else %}
+                <span class="badge bg-danger">Нет в наличии</span>
+                {% endif %}
+            </div>
+
+            <button
+                    class="btn btn-primary btn-lg w-100 mb-3 add-to-cart"
+                    data-product-id="{{ product.id }}"
+            >
+                <i class="fas fa-shopping-cart me-2"></i> В корзину
+            </button>
+
+            <div class="product-description">
+                <h4>Описание:</h4>
+                <p>{{ product.description|linebreaks }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Характеристики -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3>Характеристики</h3>
+            <div class="accordion" id="specsAccordion">
+                {% for group in product.category.attributegroup_set.all %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button
+                                class="accordion-button collapsed"
+                                data-bs-toggle="collapse"
+                                data-bs-target="#group{{ group.id }}"
+                        >
+                            {{ group.name }}
+                        </button>
+                    </h2>
+                    <div id="group{{ group.id }}" class="accordion-collapse collapse" data-bs-parent="#specsAccordion">
+                        <div class="accordion-body">
+                            <ul class="list-group">
+                                {% for attr in group.attribute_set.all %}
+                                {% with value=product.attributevalue_set.all|get_attribute_value:attr %}
+                                <li class="list-group-item">
+                                    <strong>{{ attr.name }}:</strong>
+                                    {{ value.get_value|default:"N/A" }}
+                                    {% if attr.unit %}{{ attr.unit }}{% endif %}
+                                </li>
+                                {% endwith %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    </div>
                 </div>
                 {% endfor %}
             </div>
-            <button class="carousel-control-prev" ...></button>
-            <button class="carousel-control-next" ...></button>
         </div>
     </div>
-    <div class="col-md-6">
-        <p><strong>Цена:</strong> {{ product.price }} руб.</p>
-        <p><strong>Описание:</strong> {{ product.description }}</p>
-        <p><strong>В наличии:</strong> {% if product.in_stock %}Да{% else %}Нет{% endif %}</p>
-    </div>
 </div>
-
-<h3>Характеристики:</h3>
-<ul>
-    {% for attr_value in product.attributevalue_set.all %}
-    <li>
-        {{ attr_value.attribute.name }}:
-        {{ attr_value.get_value }}
-        {% if attr_value.attribute.unit %}{{ attr_value.attribute.unit }}{% endif %}
-    </li>
-    {% endfor %}
-</ul>
+<script>
+    // Скрипт для переключения миниатюр
+    document.querySelectorAll('.thumbnail-img').forEach(item => {
+        item.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetSlide = this.getAttribute('data-bs-slide-to');
+            const carousel = document.getElementById('productCarousel');
+            bootstrap.Carousel.getOrCreateInstance(carousel).to(targetSlide);
+        });
+    });
+</script>
 {% endblock %}

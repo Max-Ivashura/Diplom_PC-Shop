@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from .models import CommunityBuild, Comment, PCBuild
 from .forms import CommunityBuildForm, CommentForm
+from django.core.paginator import Paginator
 
 @login_required
 def publish_build(request, build_id):
@@ -16,7 +17,10 @@ def publish_build(request, build_id):
     return redirect('community_build_detail', pk=community_build.pk)
 
 def community_builds(request):
-    builds = CommunityBuild.objects.filter(is_approved=True)
+    builds_list = CommunityBuild.objects.filter(is_approved=True)
+    paginator = Paginator(builds_list, 6)  # 6 сборок на странице
+    page_number = request.GET.get('page')
+    builds = paginator.get_page(page_number)
     return render(request, 'community/builds.html', {'builds': builds})
 
 def community_build_detail(request, pk):

@@ -1,11 +1,13 @@
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.contrib.sessions.backends.db import SessionStore
 from .models import Cart, CartItem
+from django.db.models import F, Sum
 from catalog.models import Product
-from django.shortcuts import render
-from .models import Cart
 from django.http import JsonResponse
+from django.shortcuts import render
+from django.db.models import Sum
+from .models import Cart
+
 
 def get_cart(request):
     if request.user.is_authenticated:
@@ -17,6 +19,7 @@ def get_cart(request):
             session_key = request.session.session_key
         cart, created = Cart.objects.get_or_create(session_key=session_key)
     return cart
+
 
 @login_required
 def add_to_cart(request, product_id):
@@ -34,6 +37,7 @@ def add_to_cart(request, product_id):
         })
     return redirect('cart')
 
+
 def remove_from_cart(request, product_id):
     product = get_object_or_404(Product, id=product_id)
     cart = get_cart(request)
@@ -49,4 +53,11 @@ def remove_from_cart(request, product_id):
 
 def cart_view(request):
     cart = get_cart(request)
-    return render(request, 'cart/cart.html', {'cart': cart})
+    total_price = cart.cartitem_set.annotate(
+        item_total=F('product__price') * F('quantity')
+    ).aggregate(total=Sum('item_total'))['total'] or 0
+
+    return render(request, 'cart/cart.html', {
+        'cart': cart,
+        'total_price': total_price
+    })

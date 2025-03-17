@@ -1,44 +1,97 @@
 {% extends "base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link href="{% static 'catalog/css/product_list.css' %}" rel="stylesheet">
+{% endblock %}
 
 {% block content %}
-<h1>Каталог</h1>
-
-<div>
-    <h3>Фильтрация:</h3>
-    <form method="get">
-        {{ filter.form.as_p }}
-        <button type="submit" class="btn btn-primary">Применить фильтр</button>
-    </form>
-    <h3>Категории:</h3>
-    <ul>
-        {% for cat in categories %}
-        <li>
-            <a href="{% url 'product_list_by_category' cat.slug %}">{{ cat.name }}</a>
-        </li>
-        {% endfor %}
-    </ul>
-</div>
-
-<div>
-    <h3>Товары:</h3>
+<div class="container mt-4">
     <div class="row">
-        {% for product in products %}
-        <div class="col-md-4">
-            <div class="card">
-                <img src="{{ product.productimage_set.first.image.url }}" class="card-img-top" alt="{{ product.name }}">
-                <div class="card-body">
-                    <h5 class="card-title">{{ product.name }}</h5>
-                    <p class="card-text">{{ product.description|truncatewords:10 }}</p>
-                    <p class="card-text"><strong>{{ product.price }} руб.</strong></p>
-                    <!-- Кнопка для перехода на детальную страницу -->
-                    <a href="{% url 'product_detail' product.pk %}" class="btn btn-secondary">Подробнее</a>
-                    <!-- Кнопка добавления в корзину -->
-                    <a href="{% url 'add_to_cart' product.id %}" class="btn btn-success add-to-cart">Добавить в
-                        корзину</a>
-                </div>
+        <!-- Боковая панель -->
+        <div class="col-md-3">
+            <div class="sticky-top pt-3">
+                <h5>Категории</h5>
+                <ul class="list-group mb-3">
+                    {% for cat in categories %}
+                    <a href="{% url 'product_list_by_category' cat.slug %}"
+                       class="list-group-item list-group-item-action {% if category == cat %}active{% endif %}">
+                        {{ cat.name }}
+                    </a>
+                    {% endfor %}
+                </ul>
+
+                <h5>Фильтры</h5>
+                <form method="get" class="border p-3 rounded">
+                    {{ filter.form.as_p }}
+                    <button type="submit" class="btn btn-primary w-100">Применить</button>
+                </form>
             </div>
         </div>
-        {% endfor %}
+
+        <!-- Основной контент -->
+        <div class="col-md-9">
+            {% for product in products %}
+            <div class="card mb-3 shadow-sm product-card">
+                <div class="row g-0">
+                    <!-- Изображение -->
+                    <div class="col-3 col-md-2">
+                        <img src="{{ product.productimage_set.first.image.url }}"
+                             class="img-fluid rounded-start product-image"
+                             alt="{{ product.name }}">
+                    </div>
+
+                    <!-- Контент -->
+                    <div class="col-9 col-md-10">
+                        <div class="card-body">
+                            <h5 class="card-title mb-2">{{ product.name }}</h5>
+                            <p class="card-text text-muted small mb-2">
+                                {{ product.description|truncatewords:15 }}
+                            </p>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="text-success fw-bold fs-5">{{ product.price }} руб.</div>
+                                <div class="d-flex gap-2">
+                                    <a href="{% url 'product_detail' product.pk %}"
+                                       class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-eye"></i> Подробнее
+                                    </a>
+                                    <a href="{% url 'add_to_cart' product.id %}"
+                                       class="btn btn-primary btn-sm">
+                                        <i class="fas fa-cart-plus"></i> В корзину
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
     </div>
+</div>
+
+<!-- Пагинация -->
+<div class="mt-4">
+    <nav aria-label="Page navigation">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Назад</a>
+            </li>
+            {% endif %}
+
+            {% for num in page_obj.paginator.page_range %}
+            <li class="page-item {% if num == page_obj.number %}active{% endif %}">
+                <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+            </li>
+            {% endfor %}
+
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ page_obj.next_page_number }}">Вперед</a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
 </div>
 {% endblock %}
