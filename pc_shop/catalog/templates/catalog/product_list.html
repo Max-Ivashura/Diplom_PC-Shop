@@ -32,39 +32,52 @@
         <!-- Основной контент -->
         <div class="col-md-9">
             {% for product in products %}
-            <div class="card mb-3 shadow-sm product-card">
-                <div class="row g-0">
-                    <!-- Изображение -->
-                    <div class="col-3 col-md-2">
-                        <img src="{{ product.productimage_set.first.image.url }}"
-                             class="img-fluid rounded-start product-image"
-                             alt="{{ product.name }}">
-                    </div>
+                {% if products.exists %}
+                <div class="card mb-3 shadow-sm product-card">
+                    <div class="row g-0">
+                        <!-- Изображение -->
+                        <div class="col-3 col-md-2">
+                            <img src="{{ product.productimage_set.first.image.url }}"
+                                 class="img-fluid rounded-start product-image"
+                                 alt="{{ product.name }}">
+                        </div>
 
-                    <!-- Контент -->
-                    <div class="col-9 col-md-10">
-                        <div class="card-body">
-                            <h5 class="card-title mb-2">{{ product.name }}</h5>
-                            <p class="card-text text-muted small mb-2">
-                                {{ product.description|truncatewords:15 }}
-                            </p>
-                            <div class="d-flex justify-content-between align-items-center">
-                                <div class="text-success fw-bold fs-5">{{ product.price }} руб.</div>
-                                <div class="d-flex gap-2">
-                                    <a href="{% url 'product_detail' product.pk %}"
-                                       class="btn btn-outline-primary btn-sm">
-                                        <i class="fas fa-eye"></i> Подробнее
-                                    </a>
-                                    <a href="{% url 'add_to_cart' product.id %}"
-                                       class="btn btn-primary btn-sm">
-                                        <i class="fas fa-cart-plus"></i> В корзину
-                                    </a>
+                        <!-- Контент -->
+                        <div class="col-9 col-md-10">
+                            <div class="card-body">
+                                <h5 class="card-title mb-2">{{ product.name }}</h5>
+                                <p class="card-text text-muted small mb-2">
+                                    {{ product.description|truncatewords:15 }}
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div class="text-success fw-bold fs-5">{{ product.price }} руб.</div>
+                                    <div class="d-flex gap-2">
+                                        <a href="{% url 'product_detail' product.pk %}"
+                                           class="btn btn-outline-primary btn-sm">
+                                            <i class="fas fa-eye"></i> Подробнее
+                                        </a>
+                                        <a href="{% url 'add_to_cart' product.id %}"
+                                           class="btn btn-primary btn-sm">
+                                            <i class="fas fa-cart-plus"></i> В корзину
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+                {% else %}
+                <div class="alert alert-info mt-4" role="alert">
+                    {% if filter.form.data %}
+                    Товаров по заданным фильтрам не найдено.
+                    <a href="{% url 'product_list' %}" class="alert-link">Сбросить фильтры</a>
+                    {% elif category %}
+                    В категории "{{ category.name }}" пока нет товаров
+                    {% else %}
+                    В каталоге пока нет доступных товаров
+                    {% endif %}
+                </div>
+                {% endif %}
             {% endfor %}
         </div>
     </div>
