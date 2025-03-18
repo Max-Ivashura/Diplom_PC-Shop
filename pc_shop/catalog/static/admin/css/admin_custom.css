@@ -1,0 +1,42 @@
+/* Улучшение таблицы атрибутов */
+.attributevalue_set-group table {
+    border-collapse: separate;
+    border-spacing: 0 8px;
+}
+
+.attributevalue_set-group th {
+    background: #f5f5f5;
+    border-bottom: 2px solid #dee2e6;
+}
+
+/* Подсветка статуса "In stock" */
+.field-in_stock input[type="checkbox"] {
+    transform: scale(1.5);
+}
+
+.checkbox-select-in_stock .selected {
+    color: #198754;
+    font-weight: bold;
+}
+
+/* Стилизация превью изображений */
+img.image-preview {
+    max-width: 150px;
+    margin: 10px 0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 2px;
+}
+
+/* Группировка атрибутов по блокам */
+.grouped-attributes {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.grouped-attributes h3 {
+    margin-top: 0;
+    color: #555;
+}

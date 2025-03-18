@@ -1,0 +1,27 @@
+.accordion-item {
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    margin-bottom: 1rem;
+}
+
+.accordion-button {
+    font-weight: 600;
+    color: #495057;
+}
+
+.accordion-body {
+    padding: 1rem;
+}
+
+.attribute-row td {
+    vertical-align: middle;
+}
+
+.attribute-row .delete-attr {
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.attribute-row .delete-attr:hover {
+    opacity: 1;
+}

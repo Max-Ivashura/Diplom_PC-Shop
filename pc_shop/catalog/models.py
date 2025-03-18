@@ -43,6 +43,10 @@ class Attribute(models.Model):
     order = models.IntegerField(default=0)
     required = models.BooleanField(default=False)
 
+    @property
+    def choices_list(self):
+        return self.choices.split('\n') if self.choices else []
+
     class Meta:
         ordering = ['order']
 
@@ -57,6 +61,9 @@ class Product(models.Model):
     price = models.DecimalField(max_digits=12, decimal_places=2)
     in_stock = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    # SEO поля
+    meta_title = models.CharField(max_length=255, blank=True)
+    meta_description = models.TextField(blank=True)
 
     @property
     def attributes_dict(self):
@@ -73,24 +80,34 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         is_new = self.pk is None
         super().save(*args, **kwargs)
+        if is_new or self.category_id is None:
+            return  # Пропускаем для новых товаров без категории
 
-        if is_new:
-            # Создаем все атрибуты для категории
-            for attr in Attribute.objects.filter(group__category=self.category):
-                AttributeValue.objects.get_or_create(product=self, attribute=attr)
+        # Создаем все атрибуты для текущей категории
+        attributes = Attribute.objects.filter(group__category=self.category)
+        for attr in attributes:
+            AttributeValue.objects.get_or_create(product=self, attribute=attr)
 
     def __str__(self):
         return self.name
 
 
 class ProductImage(models.Model):
-    product = models.ForeignKey('Product', on_delete=models.CASCADE)  # Используйте строковый импорт
+    product = models.ForeignKey('Product', on_delete=models.CASCADE)
     image = models.ImageField(upload_to=generate_image_filename)
-    is_main = models.BooleanField(default=False)
-    order = models.PositiveIntegerField(default=0, blank=False, null=False)  # Для сортировки
+    is_main = models.BooleanField(default=False, verbose_name="Основное изображение")
+    order = models.PositiveIntegerField(default=0, verbose_name="Порядок")
 
     class Meta:
         ordering = ['order']
+        verbose_name = "Изображение товара"
+        verbose_name_plural = "Изображения товара"
+
+    def save(self, *args, **kwargs):
+        if self.is_main:
+            # Снимаем отметку с других изображений
+            ProductImage.objects.filter(product=self.product).update(is_main=False)
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Image for {self.product.name}"
@@ -106,6 +123,21 @@ class AttributeValue(models.Model):
 
     class Meta:
         unique_together = ('product', 'attribute')
+
+    def set_value(self, value):
+        attr_type = self.attribute.attribute_type
+        if attr_type == 'string':
+            self.value_string = value
+        elif attr_type == 'number':
+            try:
+                self.value_number = float(value)
+            except ValueError:
+                self.value_number = None
+        elif attr_type == 'boolean':
+            self.value_boolean = bool(value)
+        elif attr_type == 'choice':
+            self.value_choice = value
+        self.save()
 
     def get_value_for_attribute(self, attribute_id):
         try:

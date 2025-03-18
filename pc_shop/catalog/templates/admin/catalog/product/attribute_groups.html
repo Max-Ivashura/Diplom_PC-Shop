@@ -1,41 +1,59 @@
-<!-- templates/admin/catalog/product/attribute_groups.html -->
-{% load custom_filters %}
-<div class="accordion" id="attributeGroupsAccordion">
-    {% for group in attribute_groups %}
-    <div class="accordion-item">
-        <h2 class="accordion-header">
-            <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+<div id="attribute-editor">
+    <h3>Характеристики товара</h3>
+    <div class="accordion" id="attributeGroupsAccordion">
+        {% for group in attribute_groups|dictsort:"order" %}
+        <div class="accordion-item">
+            <h2 class="accordion-header">
+                <button
+                    class="accordion-button {% if not forloop.first %}collapsed{% endif %}"
+                    type="button"
                     data-bs-toggle="collapse"
-                    data-bs-target="#group{{ group.id }}">
-                {{ group.name }}
-                <span class="group-order badge bg-secondary">{{ group.order }}</span>
-            </button>
-        </h2>
-        <div id="group{{ group.id }}"
-             class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
-             data-bs-parent="#attributeGroupsAccordion">
-            <div class="accordion-body">
-                <div class="attribute-list">
-                    {% for attribute in group.attributes_sorted %}
-                    <div class="attribute-row" data-attribute-id="{{ attribute.id }}">
-                        <div class="attribute-header">
-                            <span class="attribute-name">{{ attribute.name }}</span>
-                            <span class="attribute-order badge bg-light text-dark">{{ attribute.order }}</span>
-                        </div>
-                        <div class="attribute-value">
-                            {% with value=original.attribute_values_dict|get:attribute.id|stringformat:"i" %}
-                            <input type="text"
-                                   name="attribute_{{ attribute.id }}"
-                                   value="{{ value.get_value|default:'' }}"
-                                   class="form-control"
-                                   data-attribute-type="{{ attribute.attribute_type }}">
-                            {% endwith %}
-                        </div>
-                    </div>
-                    {% endfor %}
+                    data-bs-target="#group-{{ group.id }}"
+                    aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}"
+                    aria-controls="group-{{ group.id }}">
+                    {{ group.name }}
+                    <small class="text-muted ms-2">({{ group.attribute_set.count }} атрибутов)</small>
+                </button>
+            </h2>
+            <div
+                id="group-{{ group.id }}"
+                class="accordion-collapse collapse {% if forloop.first %}show{% endif %}"
+                data-bs-parent="#attributeGroupsAccordion">
+                <div class="accordion-body">
+                    <table class="table table-striped">
+                        <tbody>
+                            {% for attribute in group.attribute_set.all|dictsort:"order" %}
+                            <tr class="attribute-row" data-attribute-id="{{ attribute.id }}">
+                                <td>
+                                    <strong>{{ attribute.name }}</strong>
+                                    {% if attribute.required %}
+                                        <span class="badge bg-danger ms-2">Обязательно</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% with value=attribute_values_dict|get:attribute.id|stringformat:"i" %}
+                                        {% include "admin/catalog/includes/attribute_field.html" %}
+                                    {% endwith %}
+                                </td>
+                                <td>{{ attribute.get_attribute_type_display }}</td>
+                                <td>
+                                    <button type="button" class="btn btn-danger btn-sm delete-attr">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
+        {% endfor %}
     </div>
-    {% endfor %}
+</div>
+
+<!-- Раздел изображений -->
+<div id="product-images">
+    <h3>Изображения товара</h3>
+    {{ adminform.form.productimage_set }}
 </div>

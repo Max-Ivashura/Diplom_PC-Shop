@@ -1,25 +1,33 @@
-<!-- templates/admin/catalog/product/change_form.html -->
 {% extends "admin/change_form.html" %}
-{% load static %}
+{% load static custom_filters %}
 
 {% block extrahead %}
 {{ block.super }}
-<link href="{% static 'admin/css/attribute_groups.css' %}" rel="stylesheet">
-<script src="{% static 'admin/js/attribute_groups.js' %}"></script>
+<link rel="stylesheet" href="{% static 'admin/css/admin_custom.css' %}">
+<script src="{% static 'admin/js/admin_product.js' %}"></script>
 {% endblock %}
 
 {% block after_field_sets %}
 {{ block.super }}
 
-<div id="attribute-editor">
-    <div class="attribute-groups-container">
-        {% if original and original.category %}
-            {% include "admin/catalog/product/attribute_groups.html" %}
-        {% else %}
-            <div class="alert alert-info">
-                Сохраните товар с выбранной категорией для редактирования атрибутов
-            </div>
-        {% endif %}
+<div class="grouped-attributes">
+    <h3>Характеристики товара</h3>
+    {% for group in original.category.attributegroup_set.all %}
+    <div class="attribute-group">
+        <h4>{{ group.name }}</h4>
+        <table class="table">
+            {% for attr in group.attribute_set.all %}
+            <tr>
+                <td><strong>{{ attr.name }}</strong></td>
+                <td>
+                    {% with value=original|get_attribute_value:attr %}
+                    {{ value.get_value|default:"N/A" }}
+                    {% endwith %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
     </div>
+    {% endfor %}
 </div>
 {% endblock %}

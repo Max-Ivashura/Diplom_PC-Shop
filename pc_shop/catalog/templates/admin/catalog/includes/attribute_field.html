@@ -1,0 +1,32 @@
+{% if attribute.attribute_type == 'string' %}
+    <input type="text"
+           name="attr_{{ attribute.id }}"
+           class="form-control"
+           value="{% if value %}{{ value.value_string|default:'' }}{% endif %}">
+
+{% elif attribute.attribute_type == 'number' %}
+    <input type="number"
+           name="attr_{{ attribute.id }}"
+           class="form-control"
+           step="any"
+           value="{{ value.value_number|default:'' }}">
+
+<!-- Для булевых полей -->
+{% elif attribute.attribute_type == 'boolean' %}
+    <input type="checkbox"
+           name="attr_{{ attribute.id }}"
+           class="form-check-input"
+           {% if value.value_boolean %}checked{% endif %}>
+
+<!-- Для выпадающих списков -->
+{% elif attribute.attribute_type == 'choice' %}
+    <select name="attr_{{ attribute.id }}" class="form-select">
+        <option value="">-</option>
+        {% for choice in attribute.choices.split %}
+            <option value="{{ choice }}"
+                    {% if value.value_choice == choice %}selected{% endif %}>
+                {{ choice }}
+            </option>
+        {% endfor %}
+    </select>
+{% endif %}
